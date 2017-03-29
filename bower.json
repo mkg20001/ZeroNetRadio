@@ -1,0 +1,25 @@
+{
+  "name": "zeronet-radio",
+  "description": "Radio for ZeroNet",
+  "main": "index.js",
+  "authors": [
+    "Maciej Krüger <mkg20001@gmail.com>"
+  ],
+  "license": "GPL-3.0",
+  "keywords": [
+    "zeronet",
+    "radio"
+  ],
+  "homepage": "zero://1RaDiogZuNc8WLK3MUGJSMWwrXu8CgrFS",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.2.1"
+  }
+}
