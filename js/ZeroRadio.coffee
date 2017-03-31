@@ -21,11 +21,12 @@ class Manifest extends Class
 			part=new Part(part,cur)
 			if part.valid(cur)
 				@parts.push(part)
-		@log "#{@parts.valid} out of #{data.length} parts are valid"
+		@log "#{@parts.length} out of #{data.length} parts are valid"
+		@parts=@parts.sort (a,b) =>
+			a.start-b.start
 		@
-	add: ->
-		return @parts.sort (a,b) =>
-			a.start-b.start #the id is the loc so it really doesn't matter if it's a new object or not
+	toArray: ->
+		return @parts
 
 class Track extends Class
 	constructor: (track, onend) ->
@@ -143,7 +144,7 @@ class Station extends Class
 			if not parts
 				@cmd "wrapperNotification", ["error","Failed to get manifest"]
 			@manifest=new Manifest(parts)
-			@player.parts=@manifest.add()
+			@player.parts=@manifest.toArray() #the loc is the id so it really doesn't matter if it's a new object or not
 			@player.loop() #don't wait for the interval to start
 			@player.init=true
 			@log "Player now has #{@player.parts.length} items in queue"

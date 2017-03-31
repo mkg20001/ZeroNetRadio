@@ -248,16 +248,17 @@
           this.parts.push(part);
         }
       }
-      this.log(this.parts.valid + " out of " + data.length + " parts are valid");
-      this;
-    }
-
-    Manifest.prototype.add = function() {
-      return this.parts.sort((function(_this) {
+      this.log(this.parts.length + " out of " + data.length + " parts are valid");
+      this.parts = this.parts.sort((function(_this) {
         return function(a, b) {
           return a.start - b.start;
         };
       })(this));
+      this;
+    }
+
+    Manifest.prototype.toArray = function() {
+      return this.parts;
     };
 
     return Manifest;
@@ -460,7 +461,7 @@
             _this.cmd("wrapperNotification", ["error", "Failed to get manifest"]);
           }
           _this.manifest = new Manifest(parts);
-          _this.player.parts = _this.manifest.add();
+          _this.player.parts = _this.manifest.toArray();
           _this.player.loop();
           _this.player.init = true;
           return _this.log("Player now has " + _this.player.parts.length + " items in queue");
