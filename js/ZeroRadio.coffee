@@ -15,25 +15,23 @@ class Part extends Class
 class Manifest extends Class
 	constructor: (data) ->
 		@parts?=[]
-		@log "Init manifest with #{data.length} parts"
+		@log "Load manifest with #{data.length} parts"
 		cur=new Date().getTime()
 		for part in data
 			part=new Part(part,cur)
 			if part.valid(cur)
 				@parts.push(part)
+		@log "#{@parts.valid} out of #{data.length} parts are valid"
 		@
-	add: (list) ->
-		cur=new Date().getTime()
-		newlist=list.filter((part) => part.valid(cur))
-		ids=newlist.map((part) => part.loc)
-		return newlist.concat(@parts.filter((part) => return ids.indexOf(part.loc)==-1)).sort (a,b) =>
-			a.start-b.start
+	add: ->
+		return @parts.sort (a,b) =>
+			a.start-b.start #the id is the loc so it really doesn't matter if it's a new object or not
 
 class Track extends Class
 	constructor: (track, onend) ->
 		@el=$("<audio controls onended='console.log(\\'hi\\')'></audio>")[0]
 		@onend=onend
-		@log "E", onend
+		@log "Preload #{track.loc}"
 		$(document.body).append(@el)
 		@playing=false
 		@track=track
@@ -108,9 +106,8 @@ class Player extends Class
 				if not @playersId[track.loc]
 					@playersId[track.loc]=new Track(track,@onend.bind(@))
 					@players.push(@playersId[track.loc])
-			if @playing != track.loc
-				@play track.loc
 			@next=tracks
+			@fastLoop()
 	fastLoop: ->
 		if @next
 			if @next.length
@@ -146,7 +143,8 @@ class Station extends Class
 			if not parts
 				@cmd "wrapperNotification", ["error","Failed to get manifest"]
 			@manifest=new Manifest(parts)
-			@player.parts=@manifest.add(@player.parts)
+			@player.parts=@manifest.add()
+			@player.loop() #don't wait for the interval to start
 			@player.init=true
 			@log "Player now has #{@player.parts.length} items in queue"
 

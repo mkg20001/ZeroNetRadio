@@ -239,7 +239,7 @@
       if (this.parts == null) {
         this.parts = [];
       }
-      this.log("Init manifest with " + data.length + " parts");
+      this.log("Load manifest with " + data.length + " parts");
       cur = new Date().getTime();
       for (i = 0, len = data.length; i < len; i++) {
         part = data[i];
@@ -248,27 +248,12 @@
           this.parts.push(part);
         }
       }
+      this.log(this.parts.valid + " out of " + data.length + " parts are valid");
       this;
     }
 
-    Manifest.prototype.add = function(list) {
-      var cur, ids, newlist;
-      cur = new Date().getTime();
-      newlist = list.filter((function(_this) {
-        return function(part) {
-          return part.valid(cur);
-        };
-      })(this));
-      ids = newlist.map((function(_this) {
-        return function(part) {
-          return part.loc;
-        };
-      })(this));
-      return newlist.concat(this.parts.filter((function(_this) {
-        return function(part) {
-          return ids.indexOf(part.loc) === -1;
-        };
-      })(this))).sort((function(_this) {
+    Manifest.prototype.add = function() {
+      return this.parts.sort((function(_this) {
         return function(a, b) {
           return a.start - b.start;
         };
@@ -285,7 +270,7 @@
     function Track(track, onend) {
       this.el = $("<audio controls onended='console.log(\\'hi\\')'></audio>")[0];
       this.onend = onend;
-      this.log("E", onend);
+      this.log("Preload " + track.loc);
       $(document.body).append(this.el);
       this.playing = false;
       this.track = track;
@@ -404,10 +389,8 @@
             this.players.push(this.playersId[track.loc]);
           }
         }
-        if (this.playing !== track.loc) {
-          this.play(track.loc);
-        }
-        return this.next = tracks;
+        this.next = tracks;
+        return this.fastLoop();
       }
     };
 
@@ -477,7 +460,8 @@
             _this.cmd("wrapperNotification", ["error", "Failed to get manifest"]);
           }
           _this.manifest = new Manifest(parts);
-          _this.player.parts = _this.manifest.add(_this.player.parts);
+          _this.player.parts = _this.manifest.add();
+          _this.player.loop();
           _this.player.init = true;
           return _this.log("Player now has " + _this.player.parts.length + " items in queue");
         };

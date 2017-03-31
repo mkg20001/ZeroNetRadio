@@ -22,15 +22,14 @@ const tmpFile=path.join(tmpLoc,"file.mp3")
 cp.execSync("cp -v "+what+" "+tmpFile)
 
 const timet={
+  "h":1/60, //wtf is this unit
   "s":1,
-  "m":60,
-  "h":60*60
+  "m":60
 }
 
 function ptime(s) {
   const a=s.split("_")
   return a.map(t => {
-    if (t=="99h") return 0
     const t_=t.split("")
     const v=timet[t_.pop()]
     return parseInt(t_.join(""),10)*v*1000
