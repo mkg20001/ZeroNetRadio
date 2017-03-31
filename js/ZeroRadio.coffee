@@ -27,6 +27,11 @@ class Manifest extends Class
 		@
 	toArray: ->
 		return @parts
+	toObject: ->
+		res={}
+		for part in @parts
+			res[part.loc]=part
+		return res
 
 class Track extends Class
 	constructor: (track, onend) ->
@@ -45,7 +50,7 @@ class Track extends Class
 		if @playing
 			return
 		offset=Math.floor(@track.offset(new Date().getTime())/1000)
-		@log "Play #{@track.loc} with #{offset}"
+		@log "Play #{@track.loc} with offest of #{offset}s"
 		self=this
 		@el.addEventListener "ended", ->
 			if not self.onend
@@ -63,21 +68,16 @@ class Track extends Class
 class Player extends Class
 	constructor: () ->
 		@parts?=[]
+		@partsId?={}
 		@players?=[]
 		@playersId?={}
 		@playing=""
 		@offline=false
 		@init=false
 		@
-	register: ->
-		@log "Register player loop"
-		@interval=setInterval(@loop.bind(@),2000)
-		#@interval=setInterval(@fastLoop.bind(@),100)
-		@loop()
 	cleanPlayers: ->
-		cur=new Date().getTime()
 		@players=@players.filter (player) =>
-			if player.valid(cur)
+			if @partsId[player.track.loc]
 				return true
 			delete @playersId[player.track.loc]
 			player.remove()
@@ -94,13 +94,12 @@ class Player extends Class
 	loop: ->
 		@cleanPlayers()
 		tracks=@getTracks()
-		#chooseTrack
-		track=tracks[0]
-		if not track
+		if not tracks.length
 			if @init
 				if not @offline
 					window.cmd "wrapperNotification", ["error","<b>Stream is currently offline</b><br>Wait or come back later"]
 					@offline=true
+					@next=null
 		else
 			@offline=false
 			for track in tracks
@@ -132,26 +131,27 @@ class Station extends Class
 		@cmd=@main.cmd.bind(@main)
 		window.cmd?=@cmd
 		@player=new Player()
-		@player.register()
 		@register()
 		@
 	register: ->
 		@log "Register station"
 		@interval=setInterval(@loop.bind(@),5000)
 		@loop()
-	loop: ->
+	loop: -> #fetch new parts
 		$.get "parts/manifest.json", (parts) =>
 			if not parts
 				@cmd "wrapperNotification", ["error","Failed to get manifest"]
 			@manifest=new Manifest(parts)
 			@player.parts=@manifest.toArray() #the loc is the id so it really doesn't matter if it's a new object or not
-			@player.loop() #don't wait for the interval to start
+			@player.partsId=@manifest.toObject()
+			@player.loop()
 			@player.init=true
 			@log "Player now has #{@player.parts.length} items in queue"
 
 
 class ZeroRadio extends Class
 	constructor: ->
+		@log "NOTE: A part is valid when it's start time is not in the past"
 		@
 	start: ->
 		@frame=new ZeroFrame()

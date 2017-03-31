@@ -261,6 +261,17 @@
       return this.parts;
     };
 
+    Manifest.prototype.toObject = function() {
+      var i, len, part, ref, res;
+      res = {};
+      ref = this.parts;
+      for (i = 0, len = ref.length; i < len; i++) {
+        part = ref[i];
+        res[part.loc] = part;
+      }
+      return res;
+    };
+
     return Manifest;
 
   })(Class);
@@ -287,7 +298,7 @@
         return;
       }
       offset = Math.floor(this.track.offset(new Date().getTime()) / 1000);
-      this.log("Play " + this.track.loc + " with " + offset);
+      this.log("Play " + this.track.loc + " with offest of " + offset + "s");
       self = this;
       this.el.addEventListener("ended", function() {
         if (!self.onend) {
@@ -320,6 +331,9 @@
       if (this.parts == null) {
         this.parts = [];
       }
+      if (this.partsId == null) {
+        this.partsId = {};
+      }
       if (this.players == null) {
         this.players = [];
       }
@@ -332,18 +346,10 @@
       this;
     }
 
-    Player.prototype.register = function() {
-      this.log("Register player loop");
-      this.interval = setInterval(this.loop.bind(this), 2000);
-      return this.loop();
-    };
-
     Player.prototype.cleanPlayers = function() {
-      var cur;
-      cur = new Date().getTime();
       return this.players = this.players.filter((function(_this) {
         return function(player) {
-          if (player.valid(cur)) {
+          if (_this.partsId[player.track.loc]) {
             return true;
           }
           delete _this.playersId[player.track.loc];
@@ -373,12 +379,12 @@
       var i, len, track, tracks;
       this.cleanPlayers();
       tracks = this.getTracks();
-      track = tracks[0];
-      if (!track) {
+      if (!tracks.length) {
         if (this.init) {
           if (!this.offline) {
             window.cmd("wrapperNotification", ["error", "<b>Stream is currently offline</b><br>Wait or come back later"]);
-            return this.offline = true;
+            this.offline = true;
+            return this.next = null;
           }
         }
       } else {
@@ -443,7 +449,6 @@
         window.cmd = this.cmd;
       }
       this.player = new Player();
-      this.player.register();
       this.register();
       this;
     }
@@ -462,6 +467,7 @@
           }
           _this.manifest = new Manifest(parts);
           _this.player.parts = _this.manifest.toArray();
+          _this.player.partsId = _this.manifest.toObject();
           _this.player.loop();
           _this.player.init = true;
           return _this.log("Player now has " + _this.player.parts.length + " items in queue");
@@ -477,6 +483,7 @@
     extend(ZeroRadio, superClass);
 
     function ZeroRadio() {
+      this.log("NOTE: A part is valid when it's start time is not in the past");
       this;
     }
 
