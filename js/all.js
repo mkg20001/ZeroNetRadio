@@ -209,9 +209,9 @@
     extend(Part, superClass);
 
     function Part(data) {
-      this.loc = "./parts/" + data.loc;
-      this.start = data.start;
-      this.end = data.end;
+      this.loc = "./parts/" + data.l;
+      this.start = data.s;
+      this.end = data.e;
       this;
     }
 

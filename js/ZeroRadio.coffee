@@ -1,9 +1,8 @@
 class Part extends Class
 	constructor: (data) ->
-		@loc="./parts/"+data.loc
-		@start=data.start
-		@end=data.end
-		#@log "Init file #{data.loc} @ #{data.start} (valid=#{@valid(cur)})"
+		@loc="./parts/"+data.l
+		@start=data.s
+		@end=data.e
 		@
 	valid: (cur) ->
 		return cur>=@start and cur<@end || cur<@start and cur<@end

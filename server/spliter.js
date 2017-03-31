@@ -63,7 +63,7 @@ cp.spawn("mp3splt",[tmpFile,"-t","0.10","-d",tmpLoc],{stdio:"inherit"}).on("exit
   })
   console.log(pre)
   const manifest=parts.map(f => {
-    return {loc:f.name,start:f.start,end:f.end}
+    return {l:f.name,s:f.start,e:f.end}
   })
   console.log(manifest)
   fs.writeFileSync(path.join(partLoc,"manifest.json"),JSON.stringify(manifest))
